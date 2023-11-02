@@ -1,0 +1,8 @@
+ansible_user: lzuccarelli
+git_repo: git@github.com:luigizuccarelli/convey.git
+project_dir: Projects
+repo_name: convey
+binary_file: convey/target/debug/convey
+scripts_file: upaas/ansible/files/run-lb.sh
+load_balancer_config: upaas/ansible/files/lb-setup.toml
+

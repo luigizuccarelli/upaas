@@ -1,0 +1,6 @@
+---
+- hosts: all
+  vars_files:
+    - roles/load-balancers/vars/main.yml
+  roles:
+    - load-balancers

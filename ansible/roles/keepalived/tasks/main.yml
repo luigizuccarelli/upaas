@@ -1,0 +1,32 @@
+- name: install keepalived
+  dnf:
+    name: keepalived
+    state: latest
+  become: true
+  become_user: root
+  tags: keepalived
+
+- name: copy keepalived config 
+  ansible.builtin.copy:
+    src: '{{ user_dir }}/{{ project_dir }}/{{ keepalived_config }}'
+    dest: /etc/keepalived/keepalived.conf
+    mode: 0644
+  become: true
+  become_user: root
+  tags: keepalived
+
+- name: make sure a service unit is running
+  ansible.builtin.systemd:
+    state: restarted
+    name: keepalived
+  become: true
+  become_user: root
+  tags: keepalived
+
+- name: stop the service unit 
+  ansible.builtin.systemd:
+    state: stopped
+    name: keepalived
+  become: true
+  become_user: root
+  tags: stop-keepalived

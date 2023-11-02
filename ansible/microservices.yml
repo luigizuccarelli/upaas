@@ -1,0 +1,7 @@
+---
+- hosts: all
+  vars_files:
+    - roles/microservices/vars/main.yml
+  roles:
+    - microservices
+

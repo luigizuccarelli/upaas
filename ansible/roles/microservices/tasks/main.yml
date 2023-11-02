@@ -1,0 +1,83 @@
+- name: remove project directory
+  ansible.builtin.file:
+    path: '{{ user_dir }}/{{ project_dir }}/{{ repo_name }}'
+    state: absent
+  tags: fetch-build
+
+- name: git checkout the project
+  ansible.builtin.git:
+    repo: '{{ git_repo }}'
+    dest: '{{ user_dir}}/{{ project_dir }}/{{ repo_name }}'
+    version: main
+  tags: fetch-build
+
+- name: cd to microservice and compile project
+  shell: "cd {{ user_dir }}/{{ project_dir }}/{{ repo_name }} && cargo build"
+  register: output
+  tags: fetch-build
+
+- debug: 
+    var: output
+  tags: fetch-build
+
+# for some reason cargo outputs to std_err
+- debug: 
+    msg: "{{ output.stderr_lines }}"
+  tags: fetch-build
+
+- name: ensure directory strcuture exists
+  file: 
+    path: "/home/{{ ansible_user }}/upaas"
+    state: directory
+  tags: deploy
+
+- name: copy microservice binaries to worker hosts
+  copy:
+    src: "{{ user_dir }}/{{ project_dir }}/{{ binary_file }}"
+    dest: /home/{{ ansible_user }}/upaas
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0755
+  tags: deploy
+
+- name: copy run script to worker hosts
+  copy:
+    src: "{{ user_dir }}/{{ project_dir }}/{{ scripts_file }}"
+    dest: /home/{{ ansible_user }}/upaas
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0755
+  tags: deploy
+
+- name: start the microservice on each worker
+  args:
+    chdir: /home/{{ ansible_user }}/upaas
+  shell: "./run.sh start &"
+  async: 30
+  poll: 0
+  register: display_start
+  tags: start
+
+- debug: 
+    var: display_start
+  tags: start
+
+- name: stop the microservice on each worker
+  args:
+    chdir: /home/{{ ansible_user }}/upaas
+  shell: "./run.sh stop"
+  async: 30
+  poll: 0
+  register: display_stop
+  tags: stop
+
+- debug: 
+    var: display_stop
+  tags: stop
+
+- name: remove microservice in worker directory
+  ansible.builtin.file:
+    state: absent
+    path: /home/{{ ansible_user }}/mirror-worker
+  tags: delete
+    

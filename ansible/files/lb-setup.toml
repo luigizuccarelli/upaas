@@ -1,0 +1,19 @@
+[frontends.tcp_9000]
+listen_addr = "0.0.0.0:9000"
+backend = "tcp9000_out"
+
+[backends.tcp9000_out]
+  health_check_interval = 3
+  [backends.tcp9000_out.servers]
+    [backends.tcp9000_out.servers.server1]
+    addr = "192.168.0.15:9000"
+    weight = 1
+    [backends.tcp9000_out.servers.server2]
+    addr = "192.168.0.16:9000"
+    weight = 1
+    [backends.tcp9000_out.servers.server3]
+    addr = "192.168.0.21:9000"
+    weight = 1
+
+[stats]
+port = "7000"
