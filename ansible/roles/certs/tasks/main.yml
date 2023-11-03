@@ -42,10 +42,19 @@
     state: directory
   tags: copy
 
-- name: copy the certs to server
+- name: copy the key to server
   copy:
-    src: "ansible/certs/domain.*"
-    dest: /home/{{ ansible_user }}/upaas/certs
+    src: "ansible/certs/domain-{{ server }}.key"
+    dest: /home/{{ ansible_user }}/upaas/certs/domain.key
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0600
+  tags: copy
+
+- name: copy the cert to server
+  copy:
+    src: "ansible/certs/domain-{{ server }}.crt"
+    dest: /home/{{ ansible_user }}/upaas/certs/domain.crt
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: 0600
