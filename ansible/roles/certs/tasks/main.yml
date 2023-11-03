@@ -1,0 +1,52 @@
+# this should only be called once
+- name: generate self signed CA auth
+  shell: 'openssl req -x509 -sha256 -days 1825 -newkey rsa:2048 -keyout ../certs/rootCA.key -out ../certs/rootCA.crt -subj "{{ subject }}" -passout pass:{{ password }}'
+  register: output
+  tags: ca-auth
+
+- debug: 
+    var: output
+  tags: ca-auth
+
+# call with tags=generate for each server
+- name: generate server certs
+  shell: 'openssl req -nodes -newkey rsa:2048 -keyout {{ playbook_dir }}/certs/domain-{{ server }}.key -out {{ playbook_dir }}/certs/domain-{{ server }}.csr -subj "{{ subject }}"'
+  register: output
+  tags: generate
+
+- debug: 
+    var: output
+  tags: generate
+
+- name: create a signing request
+  shell: 'openssl req -new -key {{ playbook_dir }}/certs/domain-{{ server }}.key -out {{ playbook_dir }}/certs/domain-{{ server }}.csr -subj "{{ subject }}"'
+  register: output
+  tags: generate
+
+- debug: 
+    var: output
+  tags: generate
+
+- name: create a signing request
+  shell: 'openssl x509 -req -CA {{ playbook_dir }}/certs/rootCA.crt -CAkey {{ playbook_dir }}/certs/rootCA.key -in {{ playbook_dir }}/certs/domain-{{ server }}.csr -out {{ playbook_dir }}/certs/domain-{{ server }}.crt -days 365 -CAcreateserial -extfile {{ playbook_dir }}/{{ domain_file }} -passin pass:{{ password }}'
+  register: output
+  tags: generate
+
+- debug: 
+    var: output
+  tags: generate
+
+- name: ensure directory structure exists
+  file: 
+    path: "/home/{{ ansible_user }}/upaas/certs"
+    state: directory
+  tags: copy
+
+- name: copy the certs to server
+  copy:
+    src: "ansible/certs/domain.*"
+    dest: /home/{{ ansible_user }}/upaas/certs
+    owner: "{{ ansible_user }}"
+    group: "{{ ansible_user }}"
+    mode: 0600
+  tags: copy

@@ -1,0 +1,5 @@
+password: lmz1234
+domain_file: files/domain-b.ext
+server: b
+subject: "/C=IT/ST=Ancona/L=Ancona/O=LMZ/OU=IT Dev/CN=optiplex-uno"
+
