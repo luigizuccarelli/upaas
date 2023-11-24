@@ -1,0 +1,7 @@
+---
+- hosts: all
+  vars_files:
+    - roles/unikernel/vars/main.yml
+  roles:
+    - unikernel
+

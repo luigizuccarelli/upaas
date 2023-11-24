@@ -1,0 +1,19 @@
+{
+        "name":"iot-paas",
+        "deviceId":"id123444",
+        "patientId":"pid3423423",
+        "data":[
+          {
+            "hr":80,
+            "bps":120,
+            "bpd":80,
+            "spo2":96,
+            "custom":{
+              "tp":34.7,
+              "rr":20,
+              "etc":"123"
+            },
+            "date":"17-03-2023"
+          }
+        ]
+}

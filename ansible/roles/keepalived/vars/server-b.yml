@@ -1,4 +1,5 @@
 ansible_user: lzuccarelli
 project_dir: Projects
 keepalived_config: upaas/ansible/files/keepalived-b.conf
-
+user_dir: /home/lzuccarelli
+ansible_sudo_pass: 

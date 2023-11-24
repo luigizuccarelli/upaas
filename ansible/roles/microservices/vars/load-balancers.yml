@@ -1,0 +1,10 @@
+ansible_user: lzuccarelli
+project_dir: Projects
+user_dir: /home/lzuccarelli
+
+repos:
+  - {repo: "git@github.com:luigizuccarelli/convey.git", name: "convey"}
+
+instances:
+  - {port: 9000, instance: "load-balancer" , image: "convey"}
+

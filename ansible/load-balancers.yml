@@ -1,6 +1,6 @@
 ---
-- hosts: all
+- hosts: lbsrvs
   vars_files:
-    - roles/load-balancers/vars/main.yml
+    - roles/microservices/vars/load-balancers.yml
   roles:
-    - load-balancers
+    - microservices

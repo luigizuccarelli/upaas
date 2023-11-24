@@ -1,83 +1,78 @@
-- name: remove project directory
+- name: remove project directories
   ansible.builtin.file:
-    path: '{{ user_dir }}/{{ project_dir }}/{{ repo_name }}'
+    path: '{{ user_dir }}/{{ project_dir }}/{{ item.name }}'
     state: absent
+  loop: "{{ repos }}"
   tags: fetch-build
 
-- name: git checkout the project
+- name: git checkout the project/s
   ansible.builtin.git:
-    repo: '{{ git_repo }}'
-    dest: '{{ user_dir}}/{{ project_dir }}/{{ repo_name }}'
+    repo: '{{ item.repo }}'
+    dest: '{{ user_dir }}/{{ project_dir }}/{{ item.name }}'
     version: main
+  loop: "{{ repos }}"
   tags: fetch-build
 
-- name: cd to microservice and compile project
-  shell: "cd {{ user_dir }}/{{ project_dir }}/{{ repo_name }} && cargo build"
+- name: cd into each repo then compile/build
+  shell: 'cd {{ user_dir }}/{{ project_dir }}/{{ item.name }} && make build-release'
   register: output
+  with_items: "{{ repos }}"
   tags: fetch-build
 
 - debug: 
     var: output
   tags: fetch-build
 
-# for some reason cargo outputs to std_err
-- debug: 
-    msg: "{{ output.stderr_lines }}"
+- name: build each unikernel from binary
+  shell: 'cd {{ user_dir }}/{{ project_dir }}/{{ item.name }} && ops build -c config.json -i {{ item.name }} target/release/{{ item.name }}'
+  register: output_build
+  with_items: "{{ repos }}"
   tags: fetch-build
 
-- name: ensure directory strcuture exists
-  file: 
-    path: "/home/{{ ansible_user }}/upaas"
-    state: directory
-  tags: deploy
+- debug: 
+    var: output_build
+  tags: fetch-build
 
-- name: copy microservice binaries to worker hosts
+- name: mirror the unikernel images to each node
   copy:
-    src: "{{ user_dir }}/{{ project_dir }}/{{ binary_file }}"
-    dest: /home/{{ ansible_user }}/upaas
+    src: "{{ user_dir }}/.ops/images/{{ item.name }}"
+    dest: "{{ user_dir }}/.ops/images/{{ item.name }}"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: 0755
+  with_items: "{{ repos }}"
   tags: deploy
 
-- name: copy run script to worker hosts
+- name: mirror the redis message bus unikernel image to each node
   copy:
-    src: "{{ user_dir }}/{{ project_dir }}/{{ scripts_file }}"
-    dest: /home/{{ ansible_user }}/upaas
+    src: "{{ user_dir }}/.ops/images/redis-server"
+    dest: "{{ user_dir }}/.ops/images/redis-server"
     owner: "{{ ansible_user }}"
     group: "{{ ansible_user }}"
     mode: 0755
+  with_items: "{{ repos }}"
   tags: deploy
 
-- name: start the microservice on each worker
-  args:
-    chdir: /home/{{ ansible_user }}/upaas
-  shell: "./run.sh start &"
-  async: 30
-  poll: 0
-  register: display_start
-  tags: start
+- name: create unikernel instance on each node
+  command: "ops instance create -p {{ item.port }} -i {{ item.instance }} {{ item.image }}"
+  async: 5
+  poll: 5
+  register: instance
+  with_items: "{{ instances }}" 
+  tags: deploy
 
 - debug: 
-    var: display_start
-  tags: start
+    var: instance
+  tags: deploy
 
-- name: stop the microservice on each worker
-  args:
-    chdir: /home/{{ ansible_user }}/upaas
-  shell: "./run.sh stop"
-  async: 30
-  poll: 0
-  register: display_stop
+- name: stop all unikernel instances 
+  command: "ops instance delete {{ item.instance }}"
+  async: 5
+  poll: 5
+  register: instance_stop
+  with_items: "{{ instances }}" 
   tags: stop
 
 - debug: 
-    var: display_stop
+    var: instance_stop
   tags: stop
-
-- name: remove microservice in worker directory
-  ansible.builtin.file:
-    state: absent
-    path: /home/{{ ansible_user }}/mirror-worker
-  tags: delete
-    

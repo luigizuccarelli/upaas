@@ -1,0 +1,13 @@
+ansible_user: lzuccarelli
+project_dir: Projects
+user_dir: /home/lzuccarelli
+
+repos:
+  - {repo: "git@github.com:lmzuccarelli/rust-redis-publisher.git", name: "rust-redis-publisher"}
+  - {repo: "git@github.com:lmzuccarelli/rust-redis-subscriber.git", name: "rust-redis-subscriber"}
+
+instances:
+  - {port: 6379, instance: "redis-q" , image: "redis-server"}
+  - {port: 8081, instance: "subscriber" , image: "rust-redis-subscriber"}
+  - {port: 8080, instance: "publisher" , image: "rust-redis-publisher"}
+

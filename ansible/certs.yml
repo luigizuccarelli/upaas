@@ -1,17 +1,17 @@
 ---
-- hosts: all
+- hosts: srva
   vars_files:
     - roles/certs/vars/server-a.yml
   roles:
     - certs
 
-- hosts: all
+- hosts: srvb
   vars_files:
     - roles/certs/vars/server-b.yml
   roles:
     - certs
 
-- hosts: all
+- hosts: srvc
   vars_files:
     - roles/certs/vars/server-c.yml
   roles:

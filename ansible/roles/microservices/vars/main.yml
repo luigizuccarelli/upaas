@@ -1,7 +1,0 @@
-ansible_user: lzuccarelli
-git_repo: git@github.com:luigizuccarelli/rust-tls-microservice.git
-project_dir: Projects
-repo_name: rust-tls-microservice
-binary_file: rust-tls-microservice/target/debug/rust-tls-microservice
-scripts_file: upaas/ansible/files/run.sh
-

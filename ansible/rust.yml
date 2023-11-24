@@ -1,0 +1,7 @@
+---
+- hosts: all
+  vars_files:
+    - roles/rust/vars/main.yml
+  roles:
+    - rust
+

@@ -1,0 +1,44 @@
+- name: check if nanovm is installed
+  shell: "command -v ops"
+  register: ops_exists
+  ignore_errors: yes
+
+- name: install unikernel qemu dependencies
+  when: ops_exists is failed
+  dnf:
+    name:  
+      - qemu-kvm 
+      - qemu-img
+    state: latest
+  become: true
+  become_user: root
+
+- name: copy install binary to target
+  when: ops_exists is failed
+  ansible.builtin.copy:
+    src: '{{ playbook_dir }}/files/install.sh'
+    dest: '{{ user_dir }}/install.sh'
+    mode: 0755
+
+- name: install nanovm binaries
+  when: ops_exists is failed
+  command: "{{ user_dir }}/install.sh"
+  register: output
+  become: true
+  become_user: '{{ ansible_user }}'
+  async: 1000
+  poll: 0
+
+- debug: 
+    var: output
+
+- name: source bashrc
+  when: ops_exists is failed
+  shell: "source {{ user_dir }}/.bashrc"
+
+- name: check ops version
+  shell: "ops version"
+  register: version
+
+- debug:
+    var: version
